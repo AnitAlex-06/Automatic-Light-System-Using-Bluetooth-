@@ -1,0 +1,44 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27,16,2);
+
+#include <SoftwareSerial.h>
+SoftwareSerial BTSerial(0,1); // RX | TX
+
+char t;
+int ldrPin = A3;
+int ldrValue;
+const int led = 6;
+
+void setup() {
+  lcd.init();
+  lcd.backlight();
+  pinMode(ldrPin, INPUT);
+  pinMode(led, OUTPUT);
+  Serial.begin(9600);         // Communication with Serial Monitor
+  BTSerial.begin(9600);       // Communication with Bluetooth module
+  Serial.println("Bluetooth Communication Started");
+}
+
+void loop() {
+  ldrValue = analogRead(ldrPin);
+  Serial.print(ldrValue);
+  Serial.println();
+
+  if (ldrValue <= 30 || Serial.available() > 0) {
+    digitalWrite(led, HIGH);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("IT'S DARK");
+
+    String command = "TURN ON THE LIGHTS";
+    BTSerial.println(command);
+    Serial.print("Sent to phone: ");
+    Serial.println(command);
+  } else {
+    digitalWrite(led, LOW);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("NOTHING SO FAR");
+  }
+}
